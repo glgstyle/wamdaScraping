@@ -27,3 +27,11 @@ ou
 
 ```pip install -r requirements.txt```  
 ```pip freeze``` (pour vérifier que les packages se sont bien installés)
+
+# Extraire les infos d'un article
+
+1. Scrapper un article avec scrap_article.py :
+- Dans le terminal écrire la ligne de commande python scrap_article.py suivi de l'url de l'article, exemple :  
+```python scrap_article.py https://www.wamda.com/2024/02/tawaref-series-golden-rules-entering-saudi-market```
+2. Appuyez sur entrée
+3. Un fichier article_data.csv s'est crée dans le dossier data comportant les informations du produit (à ouvrir avec excel)
