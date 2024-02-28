@@ -32,11 +32,7 @@ data.append(date)
 
 # tags
 tags = ', '.join([tag.a.string for tag in article.find('ul', class_='c-tag-list').find_all('li')])
-# Use join() method to reformat blog links in string not list['', '']
-# reformat = '\n'.join(tags)
-# data.append(reformat)
 data.append(tags)
-
 
 # blog_links (without javascript word)
 blog_links = ', '.join([link.get('href') for link in article.find_all('a') if link.get('href') and link.get('href') != 'javascript:;'])

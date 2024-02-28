@@ -35,3 +35,11 @@ ou
 ```python scrap_article.py https://www.wamda.com/2024/02/tawaref-series-golden-rules-entering-saudi-market```
 2. Appuyez sur entrée
 3. Un fichier article_data.csv s'est crée dans le dossier data comportant les informations du produit (à ouvrir avec excel)
+
+# Extraire les liens de toutes les pages du blog
+
+1. Scrapper les pages avec python scrap_all_articles_links.py :
+- Dans le terminal écrire la ligne de commande :  
+``` python scrap_all_articles_links.py```
+2. Appuyez sur entrée
+3. Un fichier all_articles_links.csv s'est crée dans le dossier data comportant les liens de tous les articles de toutes les pages (à ouvrir avec excel)
