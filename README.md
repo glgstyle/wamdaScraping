@@ -43,3 +43,11 @@ ou
 ``` python scrap_all_articles_links.py```
 2. Appuyez sur entrée
 3. Un fichier all_articles_links.csv s'est crée dans le dossier data comportant les liens de tous les articles de toutes les pages (à ouvrir avec excel)
+
+# Extraire les datas de tous les articles du blog
+
+1. Scrapper les datas des articles avec python scrap_all_articles_from_all_pages.py :
+- Dans le terminal écrire la ligne de commande :  
+```python scrap_all_articles_from_all_pages.py```
+2. Appuyez sur entrée
+3. Un fichier all_articles_infos.csv s'est crée dans le dossier data comportant les datas de tous les articles du blog(à ouvrir avec excel)
