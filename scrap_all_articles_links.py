@@ -25,70 +25,53 @@ def search_pagination(baseUrl):
     session = HTMLSession()
     ulPager = soup.find('ul', class_='c-pagination')
     pages = []
-    # génère erreur javascript
-    # si ul pager n'est pas vide
+    # If UlPager is not empty
     if ulPager:
         r = session.get(baseUrl)
         try:
             for html in r.html:
-                print(html.url)
-                # if html.get("href").startswith("javascript:;"):
+                # print(html.url)
                 pages.append(html.url)
         except InvalidSchema:
             print("Invalid schema encountered. Skipping this URL.")
     else:
         pages.append(baseUrl)
-    print(pages)
+    # print(pages)
     return pages
 
 
 def find_all_articles_links(pagination):
+    """Extracts all articles URLs from the provided page URL using pages links.
+
+    Args:
+        pagination (str): The pages URL of the website.
+
+    Returns:
+        list: A list of URLs of all articles on the website.
+    """
     blog_titles_url = []
-    # loop on every page to find articles links
+    # Loop on every page to find articles links
     for page in pagination:
         resp = requests.get(page)
         next_soup = BeautifulSoup(resp.content, 'html.parser')
-        # next_soup_articles = next_soup.find('div', class_='o-grid')
         next_soup_article = next_soup.find_all('article', class_='c-media')
 
-        # for each article in all articles extract the link, insert to blog_titles_url
+        # For each article in all articles extract the link, insert to blog_titles_url
         for article in next_soup_article:
             link_to_article = article.h2.a.get('href')
             blog_titles_url.append(link_to_article)
-            print(link_to_article)
+            # print(link_to_article)
 
-        # join all links in one string with ', ' as separator
+        # Join all links in one string with ', ' as separator
         links_concatenated = ', '.join(blog_titles_url)
 
         # Add the string to blog_titles_url
         blog_titles_url = [links_concatenated]
-    print(blog_titles_url)
+    # print(blog_titles_url)
     return blog_titles_url
 
-# def get_page_articles_infos(page_url):
-#     all_page_articles_content = []
-#     # loop on every page to find articles content
-#     for article in page_url:
-#         get_article_infos(page_url)
-#         # creating file output
-#         # Try to open data, if there is no directory create it
-#         path = 'data/articles_infos'
-#         try:
-#             os.makedirs(path)
-#         except os.error:
-#             if not os.path.isdir(path):
-#                 os.mkdir(path)
 
-#         # output file article layout
-#         header = ['Titre', 'Contenu du blog', 'Date', 'Tags', 'Liens dans le blog']
-
-#         with open('data/data_article.csv', 'w', encoding='utf-8') as article:
-#             w = csv.writer(article, delimiter=',')
-#             w.writerow(header)
-#             w.writerow(get_article_infos(url))
-
-
-# creating file output
+# FILE OUTPUT
 # Try to open data, if there is no directory create it
 path = 'data'
 try:
@@ -97,9 +80,10 @@ except os.error:
     if not os.path.isdir(path):
         os.mkdir(path)
 
-# output file article layout
+# Header layout
 header = ['Articles url']
 
+# Open output file with writing rights
 with open('data/all_articles_links.csv', 'w', encoding='utf-8', newline='') as article:
     w = csv.writer(article, delimiter=',')
     w.writerow(header)

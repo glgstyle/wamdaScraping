@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import re
+
+
 # Part1: Get infos from article link
 
 # sys.argv -> list arguments passed to the script by the terminal (here the article url)
@@ -11,11 +13,6 @@ url =  sys.argv[1]
 
 
 def clean_text(text):
-    # # Définir une expression régulière pour trouver les caractères incorrects
-    # pattern = re.compile(r'[\u0080-\uffff]')
-    # # Remplacer les caractères incorrects par des caractères vides
-    # cleaned_text = re.sub(pattern, '', text)
-    # return cleaned_text
     """
     Cleans text by removing non-ASCII characters and potentially other unwanted elements.
 
@@ -25,7 +22,6 @@ def clean_text(text):
     Returns:
         str: The cleaned text.
     """
-
     # Regular expression for non-ASCII characters
     pattern = re.compile(r'[^\x00-\x7F]+')
 
@@ -43,22 +39,21 @@ def find_article_infos(url):
         url (str): The URL of the article.
 
     Returns:
-        dict: A dictionary containing the extracted information, or an empty
-               dictionary if no information is found or an error occurs.
+        list: data containing the extracted informations.
     """
     response = requests.get(url)
     parser = BeautifulSoup(response.content,'html.parser')
     article = (parser.find('div', class_='c-article'))
     data = []
 
-    # title
+    # TITLE
     try:
         title = clean_text(article.find('h2', class_='c-article__title').string.strip())
     except AttributeError:
         title = ""
     data.append(title)
 
-    # content
+    # CONTENT
     try:
         div_content = article.find('div', class_='s-content')
         # if div_content exists
@@ -86,15 +81,15 @@ def find_article_infos(url):
     # Add cleaned text to data
     data.append(cleaned_text)     
         
-    # date
+    # DATE
     try:
         date = article.find('p', class_='c-article__meta').time.string
     except AttributeError:
-        # record empty date if no date in article
+        # Record empty date if no date in article
         date = ""
     data.append(date)
 
-    # # tags
+    # TAGS
     try:
         ul_element = article.find('ul', class_='c-tag-list')
         if ul_element is not None:
@@ -106,7 +101,7 @@ def find_article_infos(url):
     clean_tags = clean_text(tags)
     data.append(clean_tags)
 
-    # blog_links (without javascript word)
+    # BLOG_LINKS (without javascript word)
     try:
         blog_links = ', '.join([link.get('href') for link in article.find_all('a') if link.get('href') and link.get('href') != 'javascript:;'])
     except AttributeError:
@@ -115,7 +110,7 @@ def find_article_infos(url):
 
     return data
 
-# creating file output
+# OUTPUT FILE
 # Try to open data, if there is no directory create it
 path = 'data'
 try:
@@ -124,44 +119,11 @@ except os.error:
     if not os.path.isdir(path):
         os.mkdir(path)
 
-# output file article layout
+# Header layout
 header = ['Titre', 'Contenu du blog', 'Date', 'Tags', 'Liens dans le blog']
 
+# Open file with writing rights to write header and datas
 with open('data/data_article.csv', 'w', encoding='utf-8') as article:
     w = csv.writer(article, delimiter=',')
     w.writerow(header)
     w.writerow(find_article_infos(url))
-
-
-def get_article_infos(article_url):
-    response = requests.get(url)
-    parser = BeautifulSoup(response.content,'html.parser')
-    article = (parser.find('div', class_='c-article'))
-    data = []
-
-    # title
-    title = article.find('h2', class_='c-article__title').string
-    data.append(title)
-
-    # content
-    div_content = article.find('div', class_='s-content')
-    # # if div_content exists
-    if div_content:
-        # Use join() to concatenate all paragraphes to one string
-        content = ' '.join(paragraph.get_text(strip=True) for paragraph in div_content.find_all('p'))
-        # Add content to data
-        data.append(content)
-
-    # date
-    date = article.find('p', class_='c-article__meta').time.string
-    data.append(date)
-
-    # tags
-    tags = ', '.join([tag.a.string for tag in article.find('ul', class_='c-tag-list').find_all('li')])
-    data.append(tags)
-
-    # blog_links (without javascript word)
-    blog_links = ', '.join([link.get('href') for link in article.find_all('a') if link.get('href') and link.get('href') != 'javascript:;'])
-    data.append(blog_links)
-
-    return data

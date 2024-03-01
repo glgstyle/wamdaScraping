@@ -7,29 +7,47 @@ import re
 
 
 def clean_text(text):
-    # Définir une expression régulière pour trouver les caractères incorrects
-    pattern = re.compile(r'[\u0080-\uffff]')
-    # Remplacer les caractères incorrects par des caractères vides
-    cleaned_text = re.sub(pattern, '', text)
+    """
+    Cleans text by removing non-ASCII characters and potentially other unwanted elements.
+
+    Args:
+        text (str): The text to be cleaned.
+
+    Returns:
+        str: The cleaned text.
+    """
+    # Regular expression for non-ASCII characters
+    pattern = re.compile(r'[^\x00-\x7F]+')
+
+    # Remove non-ASCII characters and normalize whitespace
+    cleaned_text = re.sub(pattern, ' ', text).strip()
+
     return cleaned_text
 
 
 def get_article_infos(url):
+    """
+    Fetches article information from a given URL.
+
+    Args:
+        url (str): The URL of the article.
+
+    Returns:
+        list: data containing the extracted informations.
+    """
     response = requests.get(url)
     parser = BeautifulSoup(response.content,'html.parser')
     article = (parser.find('div', class_='c-article'))
     data = []
 
-    # title
+    # TITLE
     try:
-        title = article.find('h2', class_='c-article__title').string
+        title = clean_text(article.find('h2', class_='c-article__title').string.strip())
     except AttributeError:
         title = ""
-    cleaned_title = cleaned_text(title)
-    # data.append(title)
-    data.append(cleaned_title)
+    data.append(title)
 
-    # content
+    # CONTENT
     try:
         div_content = article.find('div', class_='s-content')
         # if div_content exists
@@ -57,16 +75,15 @@ def get_article_infos(url):
     # Add cleaned text to data
     data.append(cleaned_text)     
 
-
-    # date
+    # DATE
     try:
         date = article.find('p', class_='c-article__meta').time.string
     except AttributeError:
-        # record empty date if no date in article
+        # Record empty date if no date in article
         date = ""
     data.append(date)
 
-    # tags
+    # TAGS
     try:
         ul_element = article.find('ul', class_='c-tag-list')
         if ul_element is not None:
@@ -75,13 +92,10 @@ def get_article_infos(url):
             tags = ""  # Assign an empty string if the element is not found
     except AttributeError:
         tags = ""
-    data.append(tags)
+    clean_tags = clean_text(tags)
+    data.append(clean_tags)
 
-    # # blog_links (without javascript word)
-    # blog_links = ', '.join([link.get('href') for link in article.find_all('a') if link.get('href') and link.get('href') != 'javascript:;' if link is not None])
-    # data.append(blog_links)
-
-        # blog_links (without javascript word)
+    # BLOG LINKS (without javascript word)
     try:
         blog_links = ', '.join([link.get('href') for link in article.find_all('a') if link.get('href') and link.get('href') != 'javascript:;'])
     except AttributeError:
@@ -89,6 +103,7 @@ def get_article_infos(url):
     data.append(blog_links)
 
     return data
+
 
 def search_pagination(baseUrl):
     """Extracts all page URLs from the provided base URL using pagination links.
@@ -104,8 +119,7 @@ def search_pagination(baseUrl):
     session = HTMLSession()
     ulPager = soup.find('ul', class_='c-pagination')
     pages = []
-    # génère erreur javascript
-    # si ul pager n'est pas vide
+    # If UlPager not empty
     if ulPager:
         r = session.get(baseUrl)
         try:
@@ -117,47 +131,53 @@ def search_pagination(baseUrl):
             #     pages.append(html.url)
 
             for html in r.html:
-                print(html.url)
-                # if html.get("href").startswith("javascript:;"):
+                # print(html.url)
                 pages.append(html.url)
         except InvalidSchema:
             print("Invalid schema encountered. Skipping this URL.")
     else:
         pages.append(baseUrl)
-    print(pages)
     return pages
 
 
-def find_all_articles_from_links(pagination):
+def get_all_datas_articles_from_article_links(pagination):
+    """Extracts all articles URLs from the provided page URL using pages links,
+       get all datas of blog articles.
+
+    Args:
+        pagination (str): The pages URL of the website.
+
+    Returns:
+        list: A list of URLs of all articles on the website.
+    """
     blog_titles_url = []
-    # loop on every page to find articles links
-    # output file article layout
+
+    # Header layout
     header = ['Titre', 'Contenu du blog', 'Date', 'Tags', 'Liens dans le blog']
 
-    # Ouvrez le fichier de sortie une seule fois
+    # Open output file with writing rights
     with open('data/all_articles_infos.csv', 'w', encoding='utf-8', newline='') as output_file:
         w = csv.writer(output_file, delimiter=',')
-        # Ecrivez l'en-tête uniquement une fois
+        # Write header
         w.writerow(header)
+        # Loop on every page to find articles links
         for page in pagination:
             resp = requests.get(page)
             next_soup = BeautifulSoup(resp.content, 'html.parser')
-            # next_soup_articles = next_soup.find('div', class_='o-grid')
             next_soup_article = next_soup.find_all('article', class_='c-media')
 
-            # for each article in all articles extract the link, insert to blog_titles_url
+            # For each article in all articles extract the link, insert to blog_titles_url, get datas or article and write in output file
             for article in next_soup_article:
                 article_link = article.h2.a.get('href')
                 blog_titles_url.append(article_link)
-                print(article_link)
+                # print(article_link)
                 article_datas = get_article_infos(article_link)
                 w.writerow(article_datas)
 
-            # join all links in one string with ', ' as separator
+            # Join all links in one string with ', ' as separator
             links_concatenated = ', '.join(blog_titles_url)
 
             # Add the string to blog_titles_url
             blog_titles_url = [links_concatenated]
-    print(blog_titles_url)
+    # print(blog_titles_url)
     return blog_titles_url
-
