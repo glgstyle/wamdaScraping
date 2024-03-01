@@ -2,13 +2,13 @@ import requests
 import os
 import csv
 from bs4 import BeautifulSoup
-import sys
 from requests_html import HTMLSession
 from requests.exceptions import InvalidSchema
 
 
+# Part2: Get all articles links from all pages of blog
+
 url = "https://www.wamda.com/media"
-# sys.argv -> list arguments passed to the script by the terminal (here the article url)
 
 
 def search_pagination(baseUrl):
@@ -65,6 +65,28 @@ def find_all_articles_links(pagination):
     print(blog_titles_url)
     return blog_titles_url
 
+# def get_page_articles_infos(page_url):
+#     all_page_articles_content = []
+#     # loop on every page to find articles content
+#     for article in page_url:
+#         get_article_infos(page_url)
+#         # creating file output
+#         # Try to open data, if there is no directory create it
+#         path = 'data/articles_infos'
+#         try:
+#             os.makedirs(path)
+#         except os.error:
+#             if not os.path.isdir(path):
+#                 os.mkdir(path)
+
+#         # output file article layout
+#         header = ['Titre', 'Contenu du blog', 'Date', 'Tags', 'Liens dans le blog']
+
+#         with open('data/data_article.csv', 'w', encoding='utf-8') as article:
+#             w = csv.writer(article, delimiter=',')
+#             w.writerow(header)
+#             w.writerow(get_article_infos(url))
+
 
 # creating file output
 # Try to open data, if there is no directory create it
@@ -78,7 +100,7 @@ except os.error:
 # output file article layout
 header = ['Articles url']
 
-with open('data/all_articles_links.csv', 'w', encoding='utf-8') as article:
+with open('data/all_articles_links.csv', 'w', encoding='utf-8', newline='') as article:
     w = csv.writer(article, delimiter=',')
     w.writerow(header)
     pagination = search_pagination(url)
